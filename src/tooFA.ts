@@ -1,33 +1,26 @@
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 
-interface Response<T = any> {
-  data: T;
-  status: number;
-  statusText: string;
-  headers: any;
-  config: any;
-  request?: any;
-}
-
 interface TooFAOpts {
   apiPollInterval: number;
   apiRetries: number;
+  childStdout: NodeJS.WriteStream;
 }
 
 const defaultOpts: TooFAOpts = {
   apiPollInterval: 500,
   apiRetries: 50,
+  childStdout: process.stdout,
 };
 
 export default class TooFA {
   child: string;
-  fetchToken: () => Promise<Response<any>>;
+  fetchToken: () => Promise<any>;
   childProcess: ChildProcessWithoutNullStreams;
   opts: Partial<TooFAOpts>;
   constructor(
     child: string,
-    fetchToken: () => Promise<Response<any>>,
-    opts = defaultOpts
+    fetchToken: () => Promise<any>,
+    opts = defaultOpts as Partial<TooFAOpts>
   ) {
     this.child = child;
     this.fetchToken = fetchToken;
@@ -35,17 +28,17 @@ export default class TooFA {
   }
 
   async _getTokenHandler() {
-    for (let idx = 0; idx < this.opts.apiRetries; idx++) {
-      setTimeout(async () => {
-        const res = await this.fetchToken();
-        if (res.status === 200) {
-          return res.data.data;
-        }
-      }, this.opts.apiPollInterval);
-    }
-    throw new Error(
-      `fetchToken timed out after ${this.opts.apiRetries} attempts`
-    );
+    return new Promise((resolve, reject) => {
+      for (let idx = 0; idx < this.opts.apiRetries; idx++) {
+        setTimeout(async () => {
+          const res = await this.fetchToken();
+          if (res.status === 200) {
+            resolve(res.data);
+          }
+        }, this.opts.apiPollInterval);
+      }
+      // reject(`fetchToken timed out after ${this.opts.apiRetries} attempts`);
+    });
   }
 
   async authorize() {
@@ -53,9 +46,10 @@ export default class TooFA {
       this.childProcess.kill();
     }
     this.childProcess = spawn(this.child);
+    this.childProcess.stdout.pipe(this.opts.childStdout);
     try {
-      const token = await this._getTokenHandler();
-      this.childProcess.stdin.write(token);
+      const data = await this._getTokenHandler();
+      this.childProcess.stdin.write(data.toString());
       this.childProcess.stdin.end();
     } catch (error) {
       if (error) throw error;

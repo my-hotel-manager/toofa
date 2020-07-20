@@ -1,17 +1,40 @@
 import TooFA from '../index';
 import http from 'http';
 
-const getARandomNumber = async () => {
-  const url =
-    'https://www.random.org/integers/?num=1&min=1&max=10&col=1&base=10&format=plain&rnd=new';
-  http.get(url, (res) => {
-    console.log(res);
+const getARandomNumber = () => {
+  const postNum = Math.floor(Math.random() * 101);
+  const url = `http://jsonplaceholder.typicode.com/posts/${postNum}`;
+  return new Promise((resolve, reject) => {
+    http.get(url, (res) => {
+      let data = '';
+      res.on('data', (chunk) => {
+        data += chunk;
+      });
+      res.on('end', () => {
+        const parsedData = JSON.parse(data);
+        const out = { status: res.statusCode, data: parsedData.id };
+        resolve(out);
+      });
+    });
   });
 };
 
-it('runs', async () => {
-  // const authHandler = TooFa();
-  getARandomNumber();
-});
+// (async () => {
+//   const authHandler = new TooFA('./__tests__/spaceship.sh', getARandomNumber, {
+//     apiPollInterval: 10,
+//   });
+//   try {
+//     await authHandler.authorize();
+//   } catch (error) {
+//     if (error) throw error;
+//   }
+// })();
 
-//
+it('runs', async () => {
+  const authHandler = new TooFA('./__tests__/spaceship.sh', getARandomNumber);
+  try {
+    await authHandler.authorize();
+  } catch (error) {
+    if (error) throw error;
+  }
+});
