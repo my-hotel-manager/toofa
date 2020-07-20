@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "rootDir": "./",
+    "outDir": "./lib",
+    "noEmit": false,
+    "target": "esnext",
+    "module": "commonjs",
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "lib": ["esnext"],
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": { "*": ["src/*"] }
+  },
+  "include": ["src/**/*", "index.ts"],
+  "exclude": ["__tests__", "node_modules"]
+}

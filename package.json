@@ -1,0 +1,18 @@
+{
+  "name": "toofa",
+  "version": "1.0.0",
+  "description": "Automated 2FA authorization",
+  "main": "lib/index.js",
+  "repository": "https://github.com/my-hotel-manager/toofa",
+  "author": "Hotel Manager",
+  "license": "MIT",
+  "private": false,
+  "scripts": {
+    "build": "tsc -p ./tsconfig.json",
+    "test": "jest"
+  },
+  "devDependencies": {
+    "@types/node": "^14.0.23",
+    "typescript": "^3.9.7"
+  }
+}
