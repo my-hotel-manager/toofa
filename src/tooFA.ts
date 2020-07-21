@@ -1,4 +1,5 @@
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
+import retry from 'async/retry';
 
 interface TooFAOpts {
   apiPollInterval: number;
@@ -8,7 +9,7 @@ interface TooFAOpts {
 
 const defaultOpts: TooFAOpts = {
   apiPollInterval: 500,
-  apiRetries: 50,
+  apiRetries: 5,
   childStdout: process.stdout,
 };
 
@@ -27,32 +28,44 @@ export default class TooFA {
     this.opts = { ...defaultOpts, ...opts };
   }
 
-  async _getTokenHandler() {
+  _getTokenHandler() {
     return new Promise((resolve, reject) => {
-      for (let idx = 0; idx < this.opts.apiRetries; idx++) {
-        setTimeout(async () => {
-          const res = await this.fetchToken();
-          if (res.status === 200) {
-            resolve(res.data);
+      retry(
+        { times: this.opts.apiRetries, interval: this.opts.apiPollInterval },
+        this.fetchToken,
+        (err, res) => {
+          console.log('gothere');
+          if (err) {
+            reject(
+              `fetchToken timed out after ${this.opts.apiRetries} attempts`
+            );
+          } else {
+            resolve(res);
           }
-        }, this.opts.apiPollInterval);
-      }
-      // reject(`fetchToken timed out after ${this.opts.apiRetries} attempts`);
+        }
+      );
     });
   }
 
-  async authorize() {
+  authorize() {
     if (this.childProcess) {
       this.childProcess.kill();
     }
+    let output = '';
     this.childProcess = spawn(this.child);
     this.childProcess.stdout.pipe(this.opts.childStdout);
-    try {
-      const data = await this._getTokenHandler();
-      this.childProcess.stdin.write(data.toString());
-      this.childProcess.stdin.end();
-    } catch (error) {
-      if (error) throw error;
-    }
+    this.childProcess.stdout.on('data', (chunk) => {
+      output += chunk.toString();
+    });
+    return new Promise((resolve, reject) => {
+      this.childProcess.stdout.on('close', () => {
+        resolve(output);
+      });
+      this._getTokenHandler().then((data) => {
+        this.childProcess.stdin.write(data.toString(), () => {
+          this.childProcess.stdin.end();
+        });
+      });
+    });
   }
 }
