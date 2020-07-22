@@ -60,11 +60,16 @@ export default class TooFA {
       this.childProcess.stdout.on('close', () => {
         resolve(output);
       });
-      this._getTokenHandler().then((res) => {
-        this.childProcess.stdin.write((res as any).data.toString(), () => {
-          this.childProcess.stdin.end();
+      this._getTokenHandler()
+        .then((res) => {
+          this.childProcess.stdin.write((res as any).data.toString(), () => {
+            this.childProcess.stdin.end();
+          });
+        })
+        .catch((err) => {
+          reject(err);
+          this.childProcess.kill();
         });
-      });
     });
   }
 }
