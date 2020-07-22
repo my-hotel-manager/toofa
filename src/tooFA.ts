@@ -15,12 +15,12 @@ const defaultOpts: TooFAOpts = {
 
 export default class TooFA {
   child: string;
-  fetchToken: () => Promise<any>;
+  fetchToken: (callback: (err, res) => any, result: any) => any;
   childProcess: ChildProcessWithoutNullStreams;
   opts: Partial<TooFAOpts>;
   constructor(
     child: string,
-    fetchToken: () => Promise<any>,
+    fetchToken: (callback: (err, res) => any, result: any) => any,
     opts = defaultOpts as Partial<TooFAOpts>
   ) {
     this.child = child;
@@ -34,7 +34,6 @@ export default class TooFA {
         { times: this.opts.apiRetries, interval: this.opts.apiPollInterval },
         this.fetchToken,
         (err, res) => {
-          console.log('gothere');
           if (err) {
             reject(
               `fetchToken timed out after ${this.opts.apiRetries} attempts`
@@ -61,8 +60,8 @@ export default class TooFA {
       this.childProcess.stdout.on('close', () => {
         resolve(output);
       });
-      this._getTokenHandler().then((data) => {
-        this.childProcess.stdin.write(data.toString(), () => {
+      this._getTokenHandler().then((res) => {
+        this.childProcess.stdin.write((res as any).data.toString(), () => {
           this.childProcess.stdin.end();
         });
       });
