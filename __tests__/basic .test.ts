@@ -1,13 +1,11 @@
 import TooFa from '../index';
+import type { FetchTokenT } from '../index';
 import http from 'http';
 
 let RAND_NUM: number;
 
 const generateGetter = (min: number, max: number) => {
-  return (
-    callback: (err: number, res: { status: number; data: number }) => any,
-    result: any
-  ) => {
+  const fetcher: FetchTokenT = (callback, result) => {
     const postNum = Math.floor(Math.random() * (max - min + 1) + min);
     RAND_NUM = postNum;
     console.log(RAND_NUM);
@@ -28,6 +26,7 @@ const generateGetter = (min: number, max: number) => {
       });
     });
   };
+  return fetcher;
 };
 
 it('runs', async () => {
