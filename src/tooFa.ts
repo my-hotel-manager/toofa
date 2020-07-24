@@ -3,7 +3,7 @@ import async from 'async';
 
 type RetryFetchTokenT = (err: number, res: TooFaResponseT) => any;
 
-type FetchTokenT = (arg0: RetryFetchTokenT, result: any) => any;
+export type FetchTokenT = (arg0: RetryFetchTokenT, result: any) => any;
 interface TooFaResponseT {
   status: number;
   data: number;
