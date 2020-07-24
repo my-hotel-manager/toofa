@@ -1,6 +1,13 @@
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
-import retry from 'async/retry';
+import async from 'async';
 
+type RetryFetchTokenT = (err: number, res: TooFaResponseT) => any;
+
+type FetchTokenT = (arg0: RetryFetchTokenT, result: any) => any;
+interface TooFaResponseT {
+  status: number;
+  data: number;
+}
 interface TooFaOpts {
   apiPollInterval: number;
   apiRetries: number;
@@ -15,12 +22,12 @@ const defaultOpts: TooFaOpts = {
 
 export default class TooFa {
   child: string;
-  fetchToken: (callback: (err, res) => any, result: any) => any;
+  fetchToken: FetchTokenT;
   childProcess: ChildProcessWithoutNullStreams;
   opts: Partial<TooFaOpts>;
   constructor(
     child: string,
-    fetchToken: (callback: (err, res) => any, result: any) => any,
+    fetchToken: FetchTokenT,
     opts = defaultOpts as Partial<TooFaOpts>
   ) {
     this.child = child;
@@ -30,13 +37,13 @@ export default class TooFa {
 
   _getTokenHandler() {
     return new Promise((resolve, reject) => {
-      retry(
+      async.retry(
         { times: this.opts.apiRetries, interval: this.opts.apiPollInterval },
         this.fetchToken,
-        (err, res) => {
+        (err: number, res: TooFaResponseT) => {
           if (err) {
             reject(
-              `fetchToken timed out after ${this.opts.apiRetries} attempts`
+              `fetchToken timed out after ${this.opts.apiRetries} attempts with status code ${err}`
             );
           } else {
             resolve(res);
