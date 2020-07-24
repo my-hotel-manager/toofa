@@ -1,27 +1,27 @@
 import { spawn, ChildProcessWithoutNullStreams } from 'child_process';
 import retry from 'async/retry';
 
-interface TooFAOpts {
+interface TooFaOpts {
   apiPollInterval: number;
   apiRetries: number;
   childStdout: NodeJS.WriteStream;
 }
 
-const defaultOpts: TooFAOpts = {
+const defaultOpts: TooFaOpts = {
   apiPollInterval: 500,
   apiRetries: 5,
   childStdout: process.stdout,
 };
 
-export default class TooFA {
+export default class TooFa {
   child: string;
   fetchToken: (callback: (err, res) => any, result: any) => any;
   childProcess: ChildProcessWithoutNullStreams;
-  opts: Partial<TooFAOpts>;
+  opts: Partial<TooFaOpts>;
   constructor(
     child: string,
     fetchToken: (callback: (err, res) => any, result: any) => any,
-    opts = defaultOpts as Partial<TooFAOpts>
+    opts = defaultOpts as Partial<TooFaOpts>
   ) {
     this.child = child;
     this.fetchToken = fetchToken;

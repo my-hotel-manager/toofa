@@ -1,4 +1,4 @@
-import TooFA from '../index';
+import TooFa from '../index';
 import http from 'http';
 
 let RAND_NUM: number;
@@ -28,7 +28,7 @@ const generateGetter = (min: number, max: number) => {
 };
 
 it('runs', async () => {
-  const authHandler = new TooFA(
+  const authHandler = new TooFa(
     './__tests__/spaceship.sh',
     generateGetter(1, 101)
   );
@@ -44,7 +44,7 @@ it('runs', async () => {
 
 it('times out', async () => {
   const retries = 10;
-  const authHandler = new TooFA(
+  const authHandler = new TooFa(
     './__tests__/spaceship.sh',
     generateGetter(101, 200),
     {

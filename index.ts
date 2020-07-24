@@ -1,2 +1,2 @@
-import TooFA from './src/tooFA';
-export default TooFA;
+import TooFa from './src/tooFa';
+export default TooFa;
