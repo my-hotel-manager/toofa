@@ -4,7 +4,10 @@ import http from 'http';
 let RAND_NUM: number;
 
 const generateGetter = (min: number, max: number) => {
-  return (callback: (err, res) => any, result: any) => {
+  return (
+    callback: (err: number, res: { status: number; data: number }) => any,
+    result: any
+  ) => {
     const postNum = Math.floor(Math.random() * (max - min + 1) + min);
     RAND_NUM = postNum;
     console.log(RAND_NUM);
